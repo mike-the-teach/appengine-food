@@ -18,6 +18,7 @@ import webapp2
 import os
 import jinja2
 from models import Food
+from google.appengine.api import users
 
 #remember, you can get this by searching for jinja2 google app engine
 jinja_current_dir = jinja2.Environment(
@@ -31,12 +32,15 @@ class FoodHandler(webapp2.RequestHandler):
         self.response.write(start_template.render())
 
     def post(self):
+        current_user = users.get_current_user()
         the_fav_food = self.request.get('user-fav-food')
-        
+
         #put into database (optional)
-        food_record = Food(food_name = the_fav_food)
+        food_record = Food()
+        food_record.food_name = the_fav_food
+        food_record.user_id = current_user.user_id()
         food_record.put()
-        
+
         #pass to the template via a dictionary
         variable_dict = {'fav_food_for_view': the_fav_food}
         end_template = jinja_current_dir.get_template("templates/results.html")
